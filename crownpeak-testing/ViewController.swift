@@ -18,16 +18,37 @@ class ViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         AppNoticeSDK.sharedInstance().resetSDK()
-        showConsentFlow()
+        
+        let pvc = PrivacyViewController()
+        pvc.view.backgroundColor = .clear
+        pvc.modalPresentationStyle = .overCurrentContext
+        self.present(pvc, animated: false, completion: nil)
+    }
+}
+
+public class PrivacyViewController: UIViewController {
+
+    var hasCalled = false
+    
+    override public func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .clear
+        view.isOpaque = false
     }
     
-    func showExplicitConsentFlow(){
-        AppNoticeSDK.sharedInstance().showExplicitConsentFlowWith(onClose: { (result, trackers) in
-        }, presenting: self)
+    override public func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if !hasCalled {
+            hasCalled = true
+            AppNoticeSDK.sharedInstance().showConsentFlowWith(onClose: { [weak self] (result, trackers) in
+                self?.finishUp()
+                }, presenting:self, repeatEvery30Days:false)
+        } else {
+            finishUp()
+        }
     }
-
-    func showConsentFlow(){
-        AppNoticeSDK.sharedInstance().showConsentFlowWith(onClose: { (result, trackers) in
-        }, presenting: self, repeatEvery30Days: true)
+    
+    func finishUp(){
+        dismiss(animated: false, completion: nil)
     }
 }
